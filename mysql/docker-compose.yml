@@ -1,0 +1,47 @@
+version: '3'
+services:
+  mysql-master:
+    image: mysql:5.7
+    container_name: mysql-master
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - TZ=Asia/Shanghai
+    volumes:
+      - "/home/henry/docker/mysql/master/mysql:/var/lib/mysql"
+      - "/home/henry/docker/mysql/master/my.cnf:/etc/mysql/my.cnf"
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_general_ci",
+      "--default-time-zone=+8:00"
+    ]
+    hostname: mysql-master
+    networks:
+      mysql_master_slave1:
+        ipv4_address: 192.111.200.10
+
+  mysql-slave1:
+    image: mysql:5.7
+    container_name: mysql-slave1
+    ports: 
+      - "3308:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - TZ=Asia/Shanghai
+    volumes:
+      - "/home/henry/docker/mysql/slave1/mysql:/var/lib/mysql"
+      - "/home/henry/docker/mysql/slave1/my.cnf:/etc/mysql/my.cnf"
+    command: [
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_general_ci",
+      "--default-time-zone=+8:00"
+    ]
+    hostname: mysql-slave1
+    networks:
+      mysql_master_slave1:
+        ipv4_address: 192.111.200.11
+     
+networks:
+  mysql_master_slave1:
+    external: true

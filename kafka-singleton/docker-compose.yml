@@ -1,0 +1,72 @@
+version: '3'
+services:
+    zoo:
+        image: zookeeper:3.4 # 镜像名称
+        #restart: always # 当发生错误时自动重启
+        hostname: zoo
+        container_name: zoo
+        privileged: true
+        ports: # 端口
+            - 2181:2181
+        volumes: # 挂载数据卷
+            - ./zoo/data:/data
+            - ./zoo/datalog:/datalog 
+        environment:
+            TZ: Asia/Shanghai
+            ZOO_MY_ID: 1 # 节点ID
+            ZOO_PORT: 2181 # zookeeper端口号
+            ZOO_SERVERS: server.1=zoo:2888:3888 # zookeeper节点列表
+        networks:
+            default:
+                ipv4_address: 192.168.240.20
+    broker:
+        image: wurstmeister/kafka
+        #restart: always
+        hostname: broker
+        container_name: broker
+        ports:
+            - "9091:9091"
+        links:
+            - zoo
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ADVERTISED_HOST_NAME: broker
+            KAFKA_ADVERTISED_PORT: 9091
+            KAFKA_HOST_NAME: broker
+            KAFKA_ZOOKEEPER_CONNECT: zoo:2181
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9091
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091
+            JMX_PORT: 9988
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - "./kafa:/kafka"
+        networks:
+           default:
+               ipv4_address: 192.168.240.21
+        depends_on: 
+            - zoo    
+    kafka-manager:
+        image: sheepkiller/kafka-manager
+        #restart: always
+        container_name: kafa-mag
+        hostname: kafa-mag
+        ports:
+            - "9002:9000"
+        links:            # 连接本compose文件创建的container
+            - broker
+            - zoo
+        environment:
+            ZK_HOSTS: zoo:2181
+            KAFKA_BROKERS: broker:9091
+            APPLICATION_SECRET: letmein
+            KM_ARGS: -Djava.net.preferIPv4Stack=true
+        networks:
+            default:
+                ipv4_address: 192.168.240.23
+        depends_on: 
+            - zoo
+            - broker 
+networks:
+    default:
+        external:
+            name: kafka_zoo

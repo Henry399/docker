@@ -1,0 +1,28 @@
+version: '3.4'
+services:
+  zk_server:
+    image: zookeeper:3.4
+    ports:
+      - 2181:2181
+    networks:
+      zookeeper:
+        aliases:
+          - zookeeper
+          
+
+  dubbo-admin:
+    image: dubbo-admin:2.0
+    #links:
+    #  - zk_server:zookeeper
+    depends_on:
+      - zk_server
+    ports:
+      - 7001:8080
+    networks: 
+      - zookeeper
+    environment:
+      - admin.registry.address=zookeeper://zookeeper:2181
+      - admin.config-center=zookeeper://zookeeper:2181
+      - admin.metadata-report.address=zookeeper://zookeeper:2181
+networks:
+  zookeeper:

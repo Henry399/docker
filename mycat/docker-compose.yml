@@ -1,0 +1,21 @@
+version: '3.2'
+services:
+  mycat:
+    image: mycat:1.6.7.1
+    container_name: mycat
+    ports: 
+      - 8066:8066
+      - 9066:9066
+    hostname: mycat
+    networks:
+      mysql_master_slave1:
+        ipv4_address: 192.111.200.12
+    volumes: 
+      - /home/henry/docker/mycat/conf:/opt/mycat/conf
+      - /home/henry/docker/mycat/logs:/opt/mycat/logs
+    networks: 
+      - mysql_master_slave1
+networks:
+  mysql_master_slave1:
+    external: true 
+
